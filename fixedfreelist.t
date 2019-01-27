@@ -30,14 +30,6 @@ local freelist_type = function(T, size_t, C)
 			and self.freelist:preallocate(size)
 	end
 
-	function freelist.metamethods.__cast(from, to, exp)
-		if from == niltype or from:isunit() then
-			return `freelist {items=nil, freelist=nil}
-		else
-			error'invalid cast'
-		end
-	end
-
 	--alloc/release
 
 	terra freelist:alloc()
@@ -83,7 +75,7 @@ local freelist = macro(
 		T = T and T:astype()
 		size_t = size_t and size_t:astype()
 		local freelist = freelist_type(T, size_t)
-		return `freelist(nil)
+		return quote var fl: freelist; fl:init() in fl end
 	end,
 	--calling it from Lua or from an escape or in a type declaration returns
 	--just the type, and you can also pass a custom C namespace.
