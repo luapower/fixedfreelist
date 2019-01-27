@@ -15,12 +15,14 @@ local freelist_type = function(T, size_t, C)
 
 	--storage
 
-	function freelist.metamethods.__cast(from, to, exp)
-		if from == niltype or from:isunit() then
-			return `freelist {items=nil, freelist=nil}
-		else
-			error'invalid cast'
-		end
+	terra freelist:init()
+		self.items:init()
+		self.freelist:init()
+	end
+
+	terra freelist:free()
+		self.items:free()
+		self.freelist:free()
 	end
 
 	terra freelist:preallocate(size: size_t)
@@ -28,9 +30,12 @@ local freelist_type = function(T, size_t, C)
 			and self.freelist:preallocate(size)
 	end
 
-	terra freelist:free()
-		self.items:free()
-		self.freelist:free()
+	function freelist.metamethods.__cast(from, to, exp)
+		if from == niltype or from:isunit() then
+			return `freelist {items=nil, freelist=nil}
+		else
+			error'invalid cast'
+		end
 	end
 
 	--alloc/release
