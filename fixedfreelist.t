@@ -35,7 +35,7 @@ local freelist_type = function(T, size_t, C)
 	terra freelist:alloc()
 		if self.freelist.len > 0 then
 			return self.items:at(self.freelist:pop())
-		elseif self.items.len < self.items.size then --prevent realloc!
+		elseif self.items.len < self.items.capacity then --prevent realloc!
 			return self.items:push_junk()
 		end
 		return nil
