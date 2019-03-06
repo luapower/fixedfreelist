@@ -1,12 +1,13 @@
 
---Fixed-size freelist for Terra.
+--Fixed-capacity freelist for Terra.
 --Written by Cosmin Apreutesei. Public Domain.
+--This is actually a mempool but with a freelist API.
 
 local freelist_type = function(T, size_t, C)
 
 	setfenv(1, C)
 
-	local items_arr = arr {T=T, size_t = size_t, C = C}
+	local items_arr = arr {T = T, size_t = size_t, C = C}
 
 	local struct freelist {
 		items: items_arr;      --{item1, ...}
