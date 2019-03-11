@@ -27,8 +27,8 @@ local freelist_type = function(T, size_t, C)
 	end
 
 	terra freelist:preallocate(size: size_t)
-		return self.items:preallocate(size)
-			and self.freelist:preallocate(size)
+		self.items.min_capacity = size
+		self.freelist.min_capacity = size
 	end
 
 	--alloc/release
@@ -37,7 +37,7 @@ local freelist_type = function(T, size_t, C)
 		if self.freelist.len > 0 then
 			return self.items:at(self.freelist:pop())
 		elseif self.items.len < self.items.capacity then --prevent realloc!
-			return self.items:push_junk()
+			return self.items:push()
 		end
 		return nil
 	end
