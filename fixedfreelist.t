@@ -1,34 +1,40 @@
 
 --Fixed-capacity freelist for Terra.
 --Written by Cosmin Apreutesei. Public Domain.
+
 --This is actually a mempool but with a freelist API.
+
+setfenv(1, require'low')
 
 local freelist_type = function(T, size_t, C)
 
-	setfenv(1, C)
+	local items = arr{T = T, size_t = size_t}
+	local indices = arr(size_t)
 
-	local items_arr = arr {T = T, size_t = size_t, C = C}
+	local struct freelist (gettersandsetters) {
+		items    : items;   --{item1, ...}
+		freelist : indices; --{free_item_index1, ...}
+	}
 
-	local struct freelist {
-		items: items_arr;      --{item1, ...}
-		freelist: arr(size_t); --{free_item_index1, ...}
+	freelist.empty = `freelist{
+		items    = items(nil);
+		freelist = indices(nil);
 	}
 
 	--storage
 
 	terra freelist:init()
-		self.items:init()
-		self.freelist:init()
+		@self = [freelist.empty]
 	end
 
 	terra freelist:free()
-		self.items:free()
-		self.freelist:free()
+		self.items    :free()
+		self.freelist :free()
 	end
 
-	terra freelist:preallocate(size: size_t)
-		self.items.min_capacity = size
-		self.freelist.min_capacity = size
+	terra freelist:set_min_capacity(cap: size_t)
+		self.items   .min_capacity = cap
+		self.freelist.min_capacity = cap
 	end
 
 	--alloc/release
@@ -61,13 +67,12 @@ local freelist_type = function(T, size_t, C)
 end
 freelist_type = terralib.memoize(freelist_type)
 
-local freelist_type = function(T, size_t, C)
+local freelist_type = function(T, size_t)
 	if terralib.type(T) == 'table' then
-		T, size_t, C = T.T, T.size_t, T.C
+		T, size_t = T.T, T.size_t
 	end
 	size_t = size_t or int
-	C = C or require'low'
-	return freelist_type(T, size_t, C)
+	return freelist_type(T, size_t)
 end
 
 local freelist = macro(
@@ -84,11 +89,10 @@ local freelist = macro(
 )
 
 if not ... then --self-test
-	setfenv(1, require'low')
 	local struct S { x: int; y: int; }
 	local terra test()
 		var fl = freelist(S)
-		fl:preallocate(2)
+		fl.min_capacity = 2
 		var p1 = fl:alloc(); assert(p1 ~= nil)
 		var p2 = fl:alloc(); assert(p2 ~= nil)
 		var p3 = fl:alloc(); assert(p3 == nil)
