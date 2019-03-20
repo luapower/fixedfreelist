@@ -1,8 +1,12 @@
+--[[
 
---Fixed-capacity freelist for Terra.
---Written by Cosmin Apreutesei. Public Domain.
+	Fixed-capacity freelist for Terra.
+	Written by Cosmin Apreutesei. Public Domain.
 
---This is actually a mempool but with a freelist API.
+	Provides O(1) dynamic allocation and freeing for a fixed number of
+	fixed-size elements. This is actually a mempool but with a freelist API.
+
+]]
 
 setfenv(1, require'low')
 
@@ -33,6 +37,7 @@ local freelist_type = function(T, size_t, C)
 	end
 
 	terra freelist:set_min_capacity(cap: size_t)
+		assert(self.items.len == 0) --can't resize while in use
 		self.items   .min_capacity = cap
 		self.freelist.min_capacity = cap
 	end
