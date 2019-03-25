@@ -65,7 +65,7 @@ local freelist_type = function(T, size_t, C)
 				return
 			end
 		end
-		assert(self.freelist:push(i) ~= -1)
+		self.freelist:push(i)
 	end
 
 	return freelist
@@ -80,7 +80,7 @@ local freelist_type = function(T, size_t)
 	return freelist_type(T, size_t)
 end
 
-local freelist = macro(
+low.fixedfreelist = macro(
 	--calling it from Terra returns a new freelist.
 	function(T,size_t)
 		T = T and T:astype()
@@ -96,7 +96,7 @@ local freelist = macro(
 if not ... then --self-test
 	local struct S { x: int; y: int; }
 	local terra test()
-		var fl = freelist(S)
+		var fl = fixedfreelist(S)
 		fl.min_capacity = 2
 		var p1 = fl:alloc(); assert(p1 ~= nil)
 		var p2 = fl:alloc(); assert(p2 ~= nil)
@@ -108,5 +108,3 @@ if not ... then --self-test
 	end
 	test()
 end
-
-return freelist
