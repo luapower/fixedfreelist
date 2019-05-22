@@ -80,7 +80,7 @@ local freelist_type = function(T, size_t)
 	return freelist_type(T, size_t)
 end
 
-low.fixedfreelist = macro(
+fixedfreelist = macro(
 	--calling it from Terra returns a new freelist.
 	function(T,size_t)
 		T = T and T:astype()
@@ -108,3 +108,5 @@ if not ... then --self-test
 	end
 	test()
 end
+
+return _M
